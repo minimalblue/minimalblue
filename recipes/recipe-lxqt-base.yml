@@ -11,7 +11,7 @@ modules:
   - from-file: lxqt/lxqt-packages.yml
   - from-file: common/system-packages.yml
   #- from-file: common/common-packages.yml
-  - from-file: sddm/sddm-files.yml\
+  - from-file: sddm/sddm-files.yml
   - from-file: sddm/x11-sddm-files.yml
   - from-file: sddm/sddm-services.yml
   - type: minimalblue-signing
