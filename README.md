@@ -1,38 +1,34 @@
-# minimalblue &nbsp; [![build-ublue](https://github.com/toothytoad/minimalblue/actions/workflows/build.yml/badge.svg)](https://github.com/toothytoad/minimalblue/actions/workflows/build.yml)
+# minimalblue &nbsp; [![build-ublue](https://github.com/minimalblue/minimalblue/actions/workflows/build.yml/badge.svg)](https://github.com/minimalblue/minimalblue/actions/workflows/build.yml)
+
+This repo uses the [BlueBuild](https://blue-build.org/) template and builds minimal images based on ublue-os base-main image.
+
+
+  - lxqt-base is the ublue-os base-main image with LXQt and little else.
+  - lxqt-hardened is the lxqt-base with some basic hardening.
+
+
+While you can rebase from any Fedora Atomic based image, the images are meant to be use with [BlueBuild](https://blue-build.org/how-to/setup/) as your `base-image`. Ex: ```base-image: ghcr.io/minimal/lxqt-base:latest```.
+
 
 See the [BlueBuild docs](https://blue-build.org/how-to/setup/) for quick setup instructions for setting up your own repository based on this template.
 
-After setup, it is recommended you update this README to describe your custom image.
 
-## Installation
 
 > **Warning**  
 > [This is an experimental feature](https://www.fedoraproject.org/wiki/Changes/OstreeNativeContainerStable), try at your own discretion.
 
-To rebase an existing atomic Fedora installation to the latest build:
 
-- First rebase to the unsigned image, to get the proper signing keys and policies installed:
-  ```
-  rpm-ostree rebase ostree-unverified-registry:ghcr.io/toothytoad/minimalblue:latest
-  ```
-- Reboot to complete the rebase:
-  ```
-  systemctl reboot
-  ```
-- Then rebase to the signed image, like so:
-  ```
-  rpm-ostree rebase ostree-image-signed:docker://ghcr.io/toothytoad/minimalblue:latest
-  ```
-- Reboot again to complete the installation
-  ```
-  systemctl reboot
-  ```
+#### Credit:
 
-The `latest` tag will automatically point to the latest build. That build will still always use the Fedora version specified in `recipe.yml`, so you won't get accidentally updated to the next major version.
+[Universal Blue](https://universal-blue.org/)
+
+[secureblue](https://github.com/secureblue/secureblue)
+
 
 ## ISO
 
 If build on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/learn/universal-blue/#fresh-install-from-an-iso). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
+
 
 ## Verification
 
