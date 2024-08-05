@@ -5,6 +5,7 @@ This repo uses the [BlueBuild](https://blue-build.org/) template and builds mini
 
   - lxqt-base is the ublue-os base-main image with LXQt and little else.
   - lxqt-hardened is the lxqt-base with some basic hardening.
+  - lxqt-main-userns-hardened is the lxqt-base with user namespace and some basic hardening.
 
 
 While you can rebase from any Fedora Atomic based image, the images are meant to be use with [BlueBuild](https://blue-build.org/how-to/setup/) as your `base-image`. Ex: ```base-image: ghcr.io/minimal/lxqt-base:latest```.
