@@ -13,4 +13,4 @@ modules:
   - from-file: common/common-packages.yml
   - from-file: sddm/sddm-files.yml
   - from-file: sddm/sddm-services.yml
-  - type: ulxqt-signing
+  - type: minimalblue-signing
