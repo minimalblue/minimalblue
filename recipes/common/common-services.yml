@@ -1,0 +1,11 @@
+type: systemd
+system:
+  enabled:
+    #- 
+  disable:
+    - rpcbind.service
+    - nfs-server.service
+    - nftables.service
+  mask:
+    - rpcbind.service
+    - nfs-server.service

@@ -10,3 +10,4 @@ scripts:
   - removesuid.sh
   - disablegeoclue.sh
   - removechsh.sh
+  - requirewheeltosu.sh
