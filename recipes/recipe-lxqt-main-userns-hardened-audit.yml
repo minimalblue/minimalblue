@@ -11,7 +11,7 @@ modules:
   - from-file: sddm/sddm-packages.yml
   - from-file: lxqt/lxqt-packages.yml
   - from-file: common/system-packages.yml
-  - from-file: audit-packages.yml
+  - from-file: common/audit-packages.yml
   - from-file: common/gui-packages.yml
   - from-file: common/gui-scripts.yml
   - from-file: sddm/sddm-files.yml
