@@ -24,6 +24,7 @@ jobs:
           - recipe-lxqt-base.yml
           - recipe-lxqt-main-userns-hardened.yml
           - recipe-lxqt-main-hardened.yml
+          - recipe-lxqt-main-userns-hardened-audit.yml
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

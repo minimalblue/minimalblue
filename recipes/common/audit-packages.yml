@@ -1,0 +1,7 @@
+type: rpm-ostree
+install:
+  - openscap
+  - openscap-utils
+  - openscap-containers
+  - scap-workbench
+  - lynis
