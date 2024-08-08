@@ -6,6 +6,8 @@ system:
     - rpcbind.service
     - nfs-server.service
     - nftables.service
+    - sshd.service
   mask:
     - rpcbind.service
     - nfs-server.service
+    - sshd.service
