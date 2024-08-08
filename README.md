@@ -41,6 +41,6 @@ cosign verify --key cosign.pub ghcr.io/toothytoad/minimalblue
 
 [GrapheneOS](https://github.com/GrapheneOS/infrastructure)
 
-[ArchWiki]([ArchWiki](https://wiki.archlinux.org/title/Main_page))
+[ArchWiki](https://wiki.archlinux.org/title/Main_page)
 
 [Securing Debian Manual](https://www.debian.org/doc/manuals/securing-debian-manual/index.en.html)
