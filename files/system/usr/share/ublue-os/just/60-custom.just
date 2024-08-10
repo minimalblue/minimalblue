@@ -189,6 +189,18 @@ toggle-gnome-jit-js:
     	echo "JIT JavaScript for Gnome and WebkitGTK has been disabled."
     fi
 
+# Toggle support for using GNOME user extensions
+toggle-gnome-extensions:
+    #!/usr/bin/bash
+    GSETTING="$(gsettings get org.gnome.shell allow-extension-installation)"
+    if [[ "${GSETTING}" == "false" ]]; then
+      gsettings set org.gnome.shell allow-extension-installation true
+      echo "Support for GNOME user extensions have been enabled"
+    else
+      gsettings reset org.gnome.shell allow-extension-installation
+      echo "Support for GNOME user extensions have been disabled"
+    fi
+
 # Toggle Xwayland support
 toggle-xwayland ACTION="prompt":
     #!/usr/bin/pkexec /usr/bin/bash
@@ -237,4 +249,62 @@ toggle-xwayland ACTION="prompt":
         echo "Xwayland for Sway has been disabled."
       fi
     fi
+
+# Toggle bash environment lockdown (mitigates LD_PRELOAD attacks)
+toggle-bash-environment-lockdown:
+    #!/usr/bin/bash
+    BASH_ENV_FILES=("$HOME/.bashrc" "$HOME/.bash_profile")
+    echo "${b}WARNING${n} This will overwrite your .bashrc and .bash_profile."
+    echo "This is needed to ensure the mitigation is effective."
+    echo "Do you understand?"
+    echo "Please type in \"YES I UNDERSTAND\" and press enter"
+    read ACCEPT
+    if [ "$ACCEPT" == "YES I UNDERSTAND" ]; then
+      if lsattr "${BASH_ENV_FILES[0]}" 2>/dev/null | awk '{print $1}' | grep -q 'i'; then
+        echo "Bash environment '(${BASH_ENV_FILES[@]})' is locked down. Unlocking it."
+        for file in "${BASH_ENV_FILES[@]}"; do
+            pkexec chattr -i "$file"
+        done
+      else
+        echo "Bash environment '(${BASH_ENV_FILES[@]})' is unlocked. Locking it."
+        echo "
+    # .bashrc
+
+    # Source global definitions
+    if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+    fi
+
+    # User specific environment
+    if ! [[ "\$PATH" =~ "\$HOME/.local/bin:\$HOME/bin:" ]]; then
+        PATH="\$HOME/.local/bin:\$HOME/bin:\$PATH"
+    fi
+    export PATH
+
+    # Uncomment the following line if you don't like systemctl's auto-paging feature:
+    # export SYSTEMD_PAGER=
+
+    unset rc
+          " > ~/.bashrc
+
+        echo "
+    # .bash_profile
+
+    # Get the aliases and functions
+    if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+    fi
+
+    # User specific environment and startup programs
+        " > ~/.bash_profile
+
+        for file in "${BASH_ENV_FILES[@]}"; do
+            pkexec chattr +i "$file"
+        done
+      fi
+    else
+      echo "Capitalization matters when you type \"YES I UNDERSTAND\""
+    fi
+
+    
 
