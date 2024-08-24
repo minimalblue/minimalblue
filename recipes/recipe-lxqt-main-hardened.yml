@@ -14,6 +14,7 @@ modules:
   - from-file: common/gui-packages.yml
   - from-file: common/disableuserns-packages.yml
   - from-file: common/gui-scripts.yml
+  - from-file: common/common-packages.yml 
   - from-file: sddm/sddm-files.yml
   - from-file: sddm/x11-sddm-files.yml
   - from-file: common/common-files.yml
@@ -23,3 +24,4 @@ modules:
   - from-file: common/disableuserns-scripts.yml
   - type: minimalblue-signing
   - type: yafti
+  # - from-file: common/common-brew.yml

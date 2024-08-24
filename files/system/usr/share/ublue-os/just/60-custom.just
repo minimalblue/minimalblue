@@ -64,6 +64,20 @@ remove-kargs-hardening:
       --delete-if-present="gather_data_sampling=force"
     echo "Hardening kargs removed."
 
+# Harden flatpaks by preloading hardened_malloc (highest supported hwcap)
+harden-flatpak:
+    #!/usr/bin/bash
+    flatpak override --user --filesystem=host-os:ro
+    uarches="$(/usr/lib64/ld-linux-x86-64.so.2 --help | grep '(supported, searched)' | cut -d'v' -f2)"
+    bestuarch="${uarches:0:1}"
+    if [ -z "$bestuarch" ] ; then
+        echo "No microarchitecture support detected. Using default x86-64-v1 architecture."
+        flatpak override --user --env=LD_PRELOAD=/var/run/host/usr/lib64/libhardened_malloc.so
+    else
+        echo "x86-64-v$bestuarch support detected. Using x86-64-v$bestuarch microarchitecture."
+        flatpak override --user --env=LD_PRELOAD=/var/run/host/usr/lib64/glibc-hwcaps/x86-64-v"$bestuarch"/libhardened_malloc.so
+    fi
+
 # Toggle the cups service on/off
 toggle-cups:
     #!/usr/bin/pkexec /usr/bin/bash
@@ -147,14 +161,17 @@ override-reset-module mod_name:
 
 # Setup USBGuard
 setup-usbguard:
-    #!/usr/bin/pkexec /usr/bin/bash
+    #!/usr/bin/bash
     echo "Notice: This will generate a policy based on your existing connected USB devices."
-    sudo mkdir -p /var/log/usbguard
-    sudo mkdir -p /etc/usbguard
-    sudo chmod 755 /etc/usbguard
-    sudo sh -c 'usbguard generate-policy > /etc/usbguard/rules.conf'
-    sudo systemctl enable --now usbguard.service
-    sudo usbguard add-user $(whoami)
+    ACTIVE_USERNAME=$(whoami)
+    pkexec sh -c '
+        mkdir -p /var/log/usbguard
+        mkdir -p /etc/usbguard
+        chmod 755 /etc/usbguard
+        usbguard generate-policy > /etc/usbguard/rules.conf
+        systemctl enable --now usbguard.service
+        usbguard add-user $1
+    ' -- $ACTIVE_USERNAME
     systemctl enable --user --now usbguard-notifier.service
 
 # Rerun Yafti
@@ -181,12 +198,12 @@ toggle-gnome-jit-js:
     #!/usr/bin/pkexec /usr/bin/bash
     ENV_FILE="/etc/profile.d/gnome-disable-jit.sh"
     if test -e $ENV_FILE; then
-    	sudo rm -f $ENV_FILE
-    	echo "JIT JavaScript for Gnome and WebkitGTK has been enabled."
+        sudo rm -f $ENV_FILE
+        echo "JIT JavaScript for Gnome and WebkitGTK has been enabled."
     else
-    	sudo cp /usr$ENV_FILE $ENV_FILE
+        sudo cp /usr$ENV_FILE $ENV_FILE
         sudo chmod 644 $ENV_FILE
-    	echo "JIT JavaScript for Gnome and WebkitGTK has been disabled."
+        echo "JIT JavaScript for Gnome and WebkitGTK has been disabled."
     fi
 
 # Toggle support for using GNOME user extensions
@@ -306,5 +323,238 @@ toggle-bash-environment-lockdown:
       echo "Capitalization matters when you type \"YES I UNDERSTAND\""
     fi
 
+# Audit minimalblue
+audit-minimalblue:
+    #!/bin/bash
+
+    STATUS_SUCCESS="SUCCESS"
+    STATUS_WARNING="WARNING"
+    STATUS_FAILURE="FAILURE"
+    print_status() {
+        local check_name="$1"
+        local status="$2"
+
+        local color_code
+        case "$status" in
+            $STATUS_SUCCESS) color_code=32 ;; # Green
+            $STATUS_WARNING) color_code=33 ;; # Yellow
+            $STATUS_FAILURE) color_code=31 ;;    # Red
+            *) color_code=0 ;;
+        esac
+
+        local formatted_status
+        formatted_status=$(printf "%*s" $(( (7 + ${#status}) / 2 )) "$status")
+        formatted_status=$(printf "%-7s" "$formatted_status")
+
+        printf "%-64s [ \033[%dm%s\033[0m ]\n" "$check_name"... "$color_code" "$formatted_status"
+    }
+
+    hasPermission() {
+        local permissions=$1
+        local prefix=$2
+        local query=$3
+        local line=$(grep "^${prefix}=" <<< "$permissions" | sed -e "s/^${prefix}=//" -e "s/#.*//")
+        IFS=';' read -r -a list <<< "$line"
+        for p in ${list[@]}; do
+            if [[ "$p" == "$query" ]]; then
+                return
+            fi
+        done
+        return 1
+    }
+
+    KARGS=$(rpm-ostree kargs)
+    KARGS_LIST=(
+        "init_on_alloc=1"
+        "init_on_free=1"
+        "slab_nomerge"
+        "page_alloc.shuffle=1"
+        "randomize_kstack_offset=on"
+        "vsyscall=none"
+        "lockdown=confidentiality"
+        "random.trust_cpu=off"
+        "random.trust_bootloader=off"
+        "iommu=force"
+        "intel_iommu=on"
+        "amd_iommu=force_isolation"
+        "iommu.passthrough=0"
+        "iommu.strict=1"
+        "pti=on"
+        "module.sig_enforce=1"
+        "mitigations=auto,nosmt"
+        "spectre_v2=on"
+        "spec_store_bypass_disable=on"
+        "l1d_flush=on"
+        "gather_data_sampling=force"
+        "efi=disable_early_pci_dma"
+        "debugfs=off"
+    )
+
+    for karg in "${KARGS_LIST[@]}"; do
+        KARG_TEST_STRING="Checking for $karg karg"
+        if echo "$KARGS" | grep -q "$karg"; then
+            print_status "$KARG_TEST_STRING" "$STATUS_SUCCESS"
+        else
+            print_status "$KARG_TEST_STRING" "$STATUS_FAILURE"
+        fi
+    done
+
+    SYSCTL_TEST_STRING="Ensuring no sysctl overrides"
+    if diff /usr/etc/sysctl.d/hardening.conf /etc/sysctl.d/hardening.conf > /dev/null; then
+        print_status "$SYSCTL_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$SYSCTL_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    SYSCTL_TEST_STRING="Ensuring no modprobe overrides"
+    if diff /usr/etc/modprobe.d/blacklist.conf /etc/modprobe.d/blacklist.conf > /dev/null; then
+        print_status "$SYSCTL_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$SYSCTL_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    AUTHSELECT_TEST_STRING="Ensuring no authselect overrides"
+    if diff /usr/etc/authselect /etc/authselect --suppress-common-lines -r > /dev/null; then
+        print_status "$AUTHSELECT_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$AUTHSELECT_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+
+    USBGUARD_TEST_STRING="Ensuring usbguard is active"
+    if systemctl is-active --quiet usbguard; then
+        print_status "$USBGUARD_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$USBGUARD_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+
+    CHRONYD_TEST_STRING="Ensuring chronyd is active"
+    if systemctl is-active --quiet chronyd; then
+        print_status "$CHRONYD_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$CHRONYD_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    BASH_TEST_STRING="Ensuring bash environment lockdown"
+    BASH_ENV_FILES=(~/.bashrc ~/.bash_profile)
+    all_locked=1
+
+    for file in "${BASH_ENV_FILES[@]}"; do
+        if [ -f "$file" ]; then
+            if lsattr "$file" 2>/dev/null | awk '{print $1}' | grep -q 'i'; then
+                continue
+            else
+                all_locked=0
+                break
+            fi
+        else
+            all_locked=0
+            break
+        fi
+    done
+
+    if [ "$all_locked" -eq 1 ]; then
+        print_status "$BASH_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$BASH_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    WHEEL_TEST_STRING="Ensuring user is not a member of wheel"
+    if groups | grep -q "\bwheel\b"; then
+        print_status "$WHEEL_TEST_STRING" "$STATUS_FAILURE"
+    else
+        print_status "$WHEEL_TEST_STRING" "$STATUS_SUCCESS"
+    fi
+
+    GNOME_XWAYLAND_TEST_STRING="Ensuring xwayland is disabled for GNOME"
+    if [ -f "/etc/systemd/user/org.gnome.Shell@wayland.service.d/override.conf" ]; then
+        print_status "$GNOME_XWAYLAND_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$GNOME_XWAYLAND_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    PLASMA_XWAYLAND_TEST_STRING="Ensuring xwayland is disabled for KDE Plasma"
+    if [ -f "/etc/systemd/user/plasma-kwin_wayland.service.d/override.conf" ]; then
+        print_status "$PLASMA_XWAYLAND_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$PLASMA_XWAYLAND_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    SWAY_XWAYLAND_TEST_STRING="Ensuring xwayland is disabled for Sway"
+    if [ -f "/etc/sway/config.d/99-noxwayland.conf" ]; then
+        print_status "$SWAY_XWAYLAND_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$SWAY_XWAYLAND_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    EXTENSIONS_TEST_STRING="Ensuring GNOME user extensions are disabled"
+    if [ "$(gsettings get org.gnome.shell allow-extension-installation)" = "false" ]; then
+        print_status "$EXTENSIONS_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$EXTENSIONS_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    SELINUX_TEST_STRING="Ensuring SELinux is in Enforcing mode"
+    if [ "$(getenforce)" = "Enforcing" ]; then
+        print_status "$SELINUX_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$SELINUX_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    ENVIRONMENT_TEST_STRING="Ensuring no environment file overrides"
+    if diff /usr/etc/environment /etc/environment > /dev/null; then
+        print_status "$ENVIRONMENT_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$ENVIRONMENT_TEST_STRING" "$STATUS_WARNING"
+    fi
     
+    remotes="$(flatpak remotes -d)"
+    while read -r remote ; do
+        ref="$(cut -f 1 <<<"$remote")"
+        url="$(cut -f 3 <<< "$remote")"
+        subset="$(cut -f 5 <<< "$remote")"
+        remote_string="Auditing flatpak remote $ref"
+        if [[ "$url" != "https://dl.flathub.org/repo/" && "$url" != "https://dl.flathub.org/beta-repo/" ]]; then
+            print_status "$remote_string" "$STATUS_FAILURE"
+            echo "> $ref is configured with an unknown url!"
+        elif [ "$subset" != "verified" ]; then
+            print_status "$remote_string" "$STATUS_FAILURE"
+            echo "> $ref is not a verified repo!"
+        else
+            print_status "$remote_string" "$STATUS_SUCCESS"
+        fi
+    done <<< "$remotes"
+    
+    declare -A flatpaks
+    while read -r ref version; do
+        flatpaks+=(["${ref}"]="${ref}//${version}")
+    done <<<$(flatpak list | sort -k 1 | cut --fields 2,4)
+    for f in ${!flatpaks[@]}; do
+        has_network=false
+        has_x11=false
+        fullref=${flatpaks["$f"]}
+        permissions=$(flatpak info --show-permissions "$fullref")
+        if hasPermission "$permissions" "shared" "network"; then
+            has_network=true
+        fi
+        if hasPermission "$permissions" "sockets" "x11" && ! hasPermission "$permissions" "sockets" "fallback-x11"  ]]; then
+            has_x11=true
+        fi
+        flatpak_test_string="Auditing $f"
+        if [[ ! $has_network == "true" && ! $has_x11 == "true" ]]; then
+            print_status "$flatpak_test_string" "$STATUS_SUCCESS"
+        elif [[ $has_x11 == "true" ]]; then
+            print_status "$flatpak_test_string" "$STATUS_FAILURE"
+        elif [[ $has_network == "true" ]]; then
+            print_status "$flatpak_test_string" "$STATUS_WARNING"
+        fi
+        if [[ $has_network == "true" ]]; then
+            echo "> $f has network access!"
+        fi
+        if [[ $has_x11 == "true" ]]; then
+            echo "> $f has x11 access!"
+        fi
+    
+    done
 

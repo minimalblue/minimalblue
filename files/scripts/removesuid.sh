@@ -29,14 +29,31 @@ whitelist=(
     "/usr/bin/umount"
     # https://gitlab.freedesktop.org/polkit/polkit/-/issues/168
     "/usr/lib/polkit-1/polkit-agent-helper-1"
+    # https://github.com/secureblue/secureblue/issues/119
+    "/usr/lib64/libhardened_malloc-light.so"
+    "/usr/lib64/libhardened_malloc-pkey.so"
+    "/usr/lib64/libhardened_malloc.so"
     # Required for chrome suid sandbox on no-userns images
     "/usr/lib64/chromium-browser/chrome-sandbox"
+    # https://github.com/secureblue/secureblue/issues/119
+    "/usr/lib64/glibc-hwcaps/x86-64/libhardened_malloc-light.so"
+    "/usr/lib64/glibc-hwcaps/x86-64/libhardened_malloc-pkey.so"
+    "/usr/lib64/glibc-hwcaps/x86-64/libhardened_malloc.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v2/libhardened_malloc-light.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v2/libhardened_malloc-pkey.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v2/libhardened_malloc.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v3/libhardened_malloc-light.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v3/libhardened_malloc-pkey.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v3/libhardened_malloc.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v4/libhardened_malloc-light.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v4/libhardened_malloc-pkey.so"
+    "/usr/lib64/glibc-hwcaps/x86-64-v4/libhardened_malloc.so"
     # Requires cap_setgid,cap_setuid if the SUID bit is removed
     "/usr/sbin/grub2-set-bootflag"
     # See /usr/bin/mount
-    "/usr/sbin/mount.nfs"
+#    "/usr/sbin/mount.nfs"
     # https://gist.github.com/ok-ryoko/1ff42a805d496cb1ca22e5cdf6ddefb0#why-does-this-binary-need-to-be-suid-root-6
-    "/usr/sbin/pam_timestamp_check"
+#    "/usr/sbin/pam_timestamp_check"
 )
 
 
@@ -56,6 +73,15 @@ find /usr -type f -perm /4000 |
             echo "Removing SUID bit from $binary"
             chmod u-s "$binary"
             echo "Removed SUID bit from $binary"
+        fi
+    done
+
+find /usr -type f -perm /2000 |
+    while IFS= read -r binary; do
+        if ! is_in_whitelist "$binary"; then
+            echo "Removing SGID bit from $binary"
+            chmod g-s "$binary"
+            echo "Removed SGID bit from $binary"
         fi
     done
 
