@@ -14,7 +14,7 @@ While you can rebase from any Fedora Atomic based image, the images are meant to
 
 #### Hardening
 
-Minimal hardening is applied from [secureblue](https://github.com/secureblue/secureblue), [GrapheneOS](https://github.com/GrapheneOS/infrastructure) and [Securing Debian Manual](https://www.debian.org/doc/manuals/securing-debian-manual/index.en.html).  These measures are evolving to fit a specific threat model, risk assessment, and usage pain points. The end goal is to match a reasonable threat model and not add pointless friction. Any hardening should not give a false sense of security, and all care should be taken to match your threat model. Security is not a fixed problem space, there is no one size fits all model.
+Minimal hardening is applied from a fork of [secureblue](https://github.com/secureblue/secureblue), and from [GrapheneOS](https://github.com/GrapheneOS/infrastructure) and [Securing Debian Manual](https://www.debian.org/doc/manuals/securing-debian-manual/index.en.html).  These measures are evolving to fit a specific threat model, risk assessment, and usage pain points. The end goal is to match a reasonable threat model and not add pointless friction. Any hardening should not give a false sense of security, and all care should be taken to match your individual threat model. Security is not a fixed problem space, there is no one size fits all model.
 
 See the [BlueBuild docs](https://blue-build.org/how-to/setup/) for quick setup instructions for setting up your own repository based on this template.
 

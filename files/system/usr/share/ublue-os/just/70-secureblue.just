@@ -356,7 +356,7 @@ audit-minimalblue:
         local line=$(grep "^${prefix}=" <<< "$permissions" | sed -e "s/^${prefix}=//" -e "s/#.*//")
         IFS=';' read -r -a list <<< "$line"
         for p in ${list[@]}; do
-            if [[ "$p" == "$query" ]]; then
+            if [[ "$p" =~ ^$query$ ]]; then
                 return
             fi
         done
@@ -489,10 +489,12 @@ audit-minimalblue:
     fi
 
     EXTENSIONS_TEST_STRING="Ensuring GNOME user extensions are disabled"
-    if [ "$(gsettings get org.gnome.shell allow-extension-installation)" = "false" ]; then
-        print_status "$EXTENSIONS_TEST_STRING" "$STATUS_SUCCESS"
-    else
-        print_status "$EXTENSIONS_TEST_STRING" "$STATUS_FAILURE"
+    if command -v gnome-shell &> /dev/null; then
+        if [ "$(gsettings get org.gnome.shell allow-extension-installation)" = "false" ]; then
+            print_status "$EXTENSIONS_TEST_STRING" "$STATUS_SUCCESS"
+        else
+            print_status "$EXTENSIONS_TEST_STRING" "$STATUS_FAILURE"
+        fi
     fi
 
     SELINUX_TEST_STRING="Ensuring SELinux is in Enforcing mode"
@@ -508,53 +510,77 @@ audit-minimalblue:
     else
         print_status "$ENVIRONMENT_TEST_STRING" "$STATUS_WARNING"
     fi
-    
-    remotes="$(flatpak remotes -d)"
-    while read -r remote ; do
-        ref="$(cut -f 1 <<<"$remote")"
-        url="$(cut -f 3 <<< "$remote")"
-        subset="$(cut -f 5 <<< "$remote")"
-        remote_string="Auditing flatpak remote $ref"
-        if [[ "$url" != "https://dl.flathub.org/repo/" && "$url" != "https://dl.flathub.org/beta-repo/" ]]; then
-            print_status "$remote_string" "$STATUS_FAILURE"
-            echo "> $ref is configured with an unknown url!"
-        elif [ "$subset" != "verified" ]; then
-            print_status "$remote_string" "$STATUS_FAILURE"
-            echo "> $ref is not a verified repo!"
+
+    GHNS_TEST_STRING="Ensuring KDE GHNS is disabled"
+    KDE_GLOBALS_FILE="/etc/xdg/kdeglobals"
+    if test -e $KDE_GLOBALS_FILE; then
+        GHNS_STRING="$(grep 'ghns=false' $KDE_GLOBALS_FILE)"
+        if [[ $GHNS_STRING == "ghns=false" ]]; then
+            print_status "$GHNS_TEST_STRING" "$STATUS_SUCCESS"
         else
-            print_status "$remote_string" "$STATUS_SUCCESS"
+            print_status "$GHNS_TEST_STRING" "$STATUS_FAILURE"
         fi
-    done <<< "$remotes"
-    
-    declare -A flatpaks
-    while read -r ref version; do
-        flatpaks+=(["${ref}"]="${ref}//${version}")
-    done <<<$(flatpak list | sort -k 1 | cut --fields 2,4)
-    for f in ${!flatpaks[@]}; do
-        has_network=false
-        has_x11=false
-        fullref=${flatpaks["$f"]}
-        permissions=$(flatpak info --show-permissions "$fullref")
-        if hasPermission "$permissions" "shared" "network"; then
-            has_network=true
-        fi
-        if hasPermission "$permissions" "sockets" "x11" && ! hasPermission "$permissions" "sockets" "fallback-x11"  ]]; then
-            has_x11=true
-        fi
-        flatpak_test_string="Auditing $f"
-        if [[ ! $has_network == "true" && ! $has_x11 == "true" ]]; then
-            print_status "$flatpak_test_string" "$STATUS_SUCCESS"
-        elif [[ $has_x11 == "true" ]]; then
-            print_status "$flatpak_test_string" "$STATUS_FAILURE"
-        elif [[ $has_network == "true" ]]; then
-            print_status "$flatpak_test_string" "$STATUS_WARNING"
-        fi
-        if [[ $has_network == "true" ]]; then
-            echo "> $f has network access!"
-        fi
-        if [[ $has_x11 == "true" ]]; then
-            echo "> $f has x11 access!"
-        fi
-    
-    done
+    fi
+
+    HARDENED_MALLOC_TEST_STRING="Ensuring hardened_malloc is set in ld.so.preload"
+    if diff /usr/etc/ld.so.preload /etc/ld.so.preload > /dev/null; then
+        print_status "$HARDENED_MALLOC_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$HARDENED_MALLOC_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    SECUREBOOT_TEST_STRING="Ensuring secure boot is enabled"
+    if [ "$(mokutil --sb-state)" == "SecureBoot enabled" ]; then
+        print_status "$SECUREBOOT_TEST_STRING" "$STATUS_SUCCESS"
+    else
+        print_status "$SECUREBOOT_TEST_STRING" "$STATUS_FAILURE"
+    fi
+
+    if command -v flatpak &> /dev/null; then
+        remotes="$(flatpak remotes -d)"
+        while read -r remote ; do
+            ref="$(cut -f 1 <<<"$remote")"
+            url="$(cut -f 3 <<< "$remote")"
+            subset="$(cut -f 5 <<< "$remote")"
+            remote_string="Auditing flatpak remote $ref"
+            if [[ "$url" != "https://dl.flathub.org/repo/" && "$url" != "https://dl.flathub.org/beta-repo/" ]]; then
+                print_status "$remote_string" "$STATUS_FAILURE"
+                echo "> $ref is configured with an unknown url!"
+            elif [ "$subset" != "verified" ]; then
+                print_status "$remote_string" "$STATUS_FAILURE"
+                echo "> $ref is not a verified repo!"
+            else
+                print_status "$remote_string" "$STATUS_SUCCESS"
+            fi
+        done <<< "$remotes"
+        
+        declare -A flatpaks
+        while read -r ref version; do
+            flatpaks+=(["${ref}"]="${ref}//${version}")
+        done <<<$(flatpak list | sort -k 1 | cut --fields 2,4)
+        for f in ${!flatpaks[@]}; do
+            warnings=()
+            status="$STATUS_SUCCESS"
+            fullref=${flatpaks["$f"]}
+            permissions=$(flatpak info --show-permissions "$fullref")
+
+            if hasPermission "$permissions" "shared" "network"; then
+                [[ "$status" != "$STATUS_FAILURE" ]] && status="$STATUS_WARNING"
+                warnings+=("> $f has network access!")
+            fi
+            if hasPermission "$permissions" "sockets" "x11" && ! hasPermission "$permissions" "sockets" "fallback-x11"; then
+                status="$STATUS_FAILURE"
+                warnings+=("> $f has x11 access!")
+            fi
+            if ! hasPermission "$permissions" "LD_PRELOAD" .*"/libhardened_malloc.so"; then
+                status="$STATUS_FAILURE"
+                warnings+=("> $f is not using hardened_malloc!")
+            fi
+            flatpak_test_string="Auditing $f"
+            print_status "$flatpak_test_string" "$status"
+            for warning in "${warnings[@]}"; do
+                echo "$warning"
+            done
+        done
+    fi
 

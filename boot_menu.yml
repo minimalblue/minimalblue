@@ -1,5 +1,0 @@
-ublue_variants:
-  - label: minimalblue/minimalblue
-    ks: /kickstart/ublue-os.ks
-    flavors:
-      - label: minimalblue
