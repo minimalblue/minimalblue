@@ -2,4 +2,9 @@ type: script
 scripts:
   - disablecups.sh
   - disablesshd.sh
+  - disableavahidaemon.sh
+  - disablealsastate.sh
+  - disablemodemmanager.sh
+  - disablenfsdaemons.sh
+  - disablesssd.sh
   - justfilehardening.sh
