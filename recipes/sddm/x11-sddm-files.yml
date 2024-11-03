@@ -1,4 +1,0 @@
-type: files
-files:
-  - source: x11-sddm/system/usr
-    destination: /usr

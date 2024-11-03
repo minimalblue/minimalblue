@@ -1,0 +1,4 @@
+type: script
+scripts:
+  - setsddmrootless-x11variables.sh
+  - setXwrappervariables.sh

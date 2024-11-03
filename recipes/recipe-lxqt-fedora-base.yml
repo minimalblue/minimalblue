@@ -1,0 +1,12 @@
+name: lxqt-fedora-base
+
+description: "lxqt fedora base without hardening"
+
+base-image: quay.io/fedora-ostree-desktops/base
+
+image-version: 41
+
+modules:
+  - from-file: common/sddm-x11-modules.yml
+  - from-file: common/lxqt-packages.yml
+  - from-file: common/system-packages.yml

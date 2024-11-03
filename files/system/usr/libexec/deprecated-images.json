@@ -1,0 +1,10 @@
+{
+    "imageTypes": [
+      "framework",
+      "main-laptop",
+      "nvidia-laptop",
+      "server",
+      "bluefin",
+      "aurora"
+    ]
+}

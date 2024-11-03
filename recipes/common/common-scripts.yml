@@ -3,9 +3,9 @@ scripts:
   - authselect.sh
   - setfilepermissions.sh
   - disablesealertpopups.sh
-  - hardencontainerpolicy.sh
   - httpsmirrors.sh
   - createmissingdirectories.sh
   - removesuid.sh
   - disablegeoclue.sh
   - addjustconfig.sh
+  - hardencontainerpolicy.sh

@@ -1,0 +1,32 @@
+modules:
+    - type: rpm-ostree
+      install:
+        - sddm
+        - sddm-x11
+        - sddm-themes
+        - qt6-qtimageformats
+        - qt6-qt5compat 
+        - qt6-qtdeclarative
+        - qt6-qtquickcontrols2
+        - qt6-qtsvg
+        - lxqt-wallet
+        #- kwallet
+        - pam-kwallet
+        - xinput
+        - xorg-x11-server-Xorg
+        - xorg-x11-drv-intel
+
+    - type: files
+      files:
+        - source: system/sddm/usr
+          destination: /usr
+
+    - type: script
+      scripts:
+        - setsddmrootless-x11variables.sh
+        - setXwrappervariables.sh
+
+    - type: systemd
+      system:
+        enabled:
+          - sddm-boot.service

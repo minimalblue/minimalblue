@@ -1,3 +1,7 @@
+.idea
 cosign.key
 cosign.private
+*.kate-swp
+.directory
 Containerfile
+.DS_Store

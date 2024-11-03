@@ -13,16 +13,13 @@ install:
   - util-linux
   - xdg-user-dirs
   - xdg-utils
-  - xorg-x11-server-Xorg
-
+  
 # graphics
   - mesa-dri-drivers
   - mesa-vulkan-drivers
-  - xorg-x11-drv-intel
   
 # sound
   - pamixer
-  - pavucontrol-qt
   - pipewire
   - playerctl
   - pulseaudio-utils
@@ -33,38 +30,14 @@ install:
   - bluez
   - bluez-tools
   - network-manager-applet
-  - NetworkManager-openconnect
-  - NetworkManager-openvpn
+#  - NetworkManager-openconnect
+#  - NetworkManager-openvpn
   - nm-connection-editor
-  
- # input
-  - xinput
- 
-# window manager
-  - openbox
-  - obconf
 
 # terminal
   - alacritty
   - bash-completion
 
-# file manager
-  - gvfs-archive
-  - gvfs-fuse
-  - gvfs-gphoto2
-  - gvfs-mtp
-  - gvfs-nfs
-  - gvfs-smb
-  - pcmanfm-qt
-  - perl-File-MimeInfo
-  - samba-client
-  - xarchiver
-
 # setup
   - initial-setup
   - initial-setup-gui
-
-# theme and GUI
-  - breeze-cursor-theme
-  - breeze-gtk
-  - breeze-icon-theme
