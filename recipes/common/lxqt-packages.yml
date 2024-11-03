@@ -5,8 +5,8 @@ install:
   - breeze-icon-theme
   - kvantum
   - libfm-qt
-  - libfm-qt-devel
-  - qt6-qtbase-common
+  #- libfm-qt-devel
+  #- qt6-qtbase-common
   - liblxqt
   - libqtxdg
   - libX11-common
@@ -34,4 +34,4 @@ install:
   - openbox
   - pavucontrol-qt
   - xcb-util
-  - xdg-desktop-portal-lxqt
+  #- xdg-desktop-portal-lxqt
