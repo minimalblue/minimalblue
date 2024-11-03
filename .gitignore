@@ -5,3 +5,5 @@ cosign.private
 .directory
 Containerfile
 .DS_Store
+/Containerfile
+/Containerfile.*

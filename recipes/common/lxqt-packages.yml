@@ -5,6 +5,8 @@ install:
   - breeze-icon-theme
   - kvantum
   - libfm-qt
+  - libfm-qt-devel
+  - qt6-qtbase-common
   - liblxqt
   - libqtxdg
   - libX11-common
