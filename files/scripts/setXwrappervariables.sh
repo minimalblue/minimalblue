@@ -10,6 +10,6 @@ allowed_users = console
 
 needs_root_rights = no
 
-' > /usr/lib/X11/Xwrapper.config
+' > /etc/X11/Xwrapper.config
 
-cp /usr/lib/X11/Xwrapper.config /etc/X11/Xwrapper.config
+#cp /usr/lib/X11/Xwrapper.config /etc/X11/Xwrapper.config
