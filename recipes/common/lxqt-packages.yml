@@ -12,7 +12,6 @@ install:
   - lxqt-about
   - lxqt-admin
   - lxqt-archiver
-  - lxqt-common
   - lxqt-config
   - lxqt-config-randr
   - lxqt-globalkeys
