@@ -46,7 +46,7 @@ jobs:
 
       - name: Validate desktop kernel and kmod versions
         # if: ${{ !contains(env.IMAGE_NAME, 'securecore') }}
-        uses: Wandalen/wretry.action@v3.7.0
+        uses: Wandalen/wretry.action@v3.7.1
         with:
           attempt_limit: 3
           attempt_delay: 15000
