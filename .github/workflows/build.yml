@@ -46,7 +46,7 @@ jobs:
 
       - name: Validate desktop kernel and kmod versions
         # if: ${{ !contains(env.IMAGE_NAME, 'securecore') }}
-        uses: Wandalen/wretry.action@v3.7.0
+        uses: Wandalen/wretry.action@v3.7.2
         with:
           attempt_limit: 3
           attempt_delay: 15000
@@ -62,7 +62,7 @@ jobs:
 
        # the build is fully handled by the reusable github action
       - name: Build minimalblue
-        uses: blue-build/github-action@v1.6.2
+        uses: blue-build/github-action@v1.7.0
         with:
           cli_version: v0.8.20
           recipe: ${{ matrix.recipe }}
