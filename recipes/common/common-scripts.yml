@@ -5,6 +5,5 @@ scripts:
   - disablesealertpopups.sh
   - httpsmirrors.sh
   - createmissingdirectories.sh
-  - removesuid.sh
   - disablegeoclue.sh
-  - hardencontainerpolicy.sh
+  - createjustcompletions.sh
