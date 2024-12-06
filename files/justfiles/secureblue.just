@@ -1,6 +1,6 @@
 # Add additional boot parameters for hardening (requires reboot)
 set-kargs-hardening:
-    #!/usr/bin/pkexec /usr/bin/bash
+    #!/usr/bin/bash
     read -p "Do you need support for 32-bit processes/syscalls? (This is mostly used by legacy software, with some exceptions, such as Steam) [y/N]: " YES
     if [[ "$YES" == [Yy]* ]]; then
         echo "Keeping 32-bit support."
@@ -51,7 +51,7 @@ set-kargs-hardening:
 
 # Remove all hardening boot parameters (requires reboot)
 remove-kargs-hardening:
-    #!/usr/bin/pkexec /usr/bin/bash
+    #!/usr/bin/bash
     rpm-ostree kargs \
       --delete-if-present="init_on_alloc=1" \
       --delete-if-present="init_on_free=1" \
@@ -173,7 +173,6 @@ override-reset-module mod_name:
       echo "No override found for $MOD_NAME module."
     fi
 
-
 # Setup USBGuard
 setup-usbguard:
     #!/usr/bin/bash
@@ -192,7 +191,6 @@ setup-usbguard:
 # Rerun Yafti
 rerun-yafti:
     yafti -f /usr/share/ublue-os/firstboot/yafti.yml
-
 
 # Toggle anticheat support by changing ptrace scope (requires restart)
 toggle-anticheat-support:
@@ -338,8 +336,8 @@ toggle-bash-environment-lockdown:
       echo "Capitalization matters when you type \"YES I UNDERSTAND\""
     fi
 
-# Audit minimalblue
-audit-minimalblue:
+# Audit secureblue
+audit-secureblue:
     #!/bin/bash
 
     STATUS_SUCCESS="SUCCESS"
@@ -495,7 +493,6 @@ audit-minimalblue:
         print_status "$USBGUARD_TEST_STRING" "$STATUS_FAILURE"
     fi
 
-
     CHRONYD_TEST_STRING="Ensuring chronyd is active"
     if systemctl is-active --quiet chronyd; then
         print_status "$CHRONYD_TEST_STRING" "$STATUS_SUCCESS"
@@ -620,11 +617,12 @@ audit-minimalblue:
                 print_status "$remote_string" "$STATUS_SUCCESS"
             fi
         done <<< "$remotes"
-        
+
         declare -A flatpaks
         while read -r ref version; do
             flatpaks+=(["${ref}"]="${ref}//${version}")
-        done <<<$(flatpak list | sort -k 1 | cut --fields 2,4)
+        done < <(flatpak list | sort -k 1 | cut --fields 2,4)
+
         for f in ${!flatpaks[@]}; do
             warnings=()
             status="$STATUS_SUCCESS"
@@ -671,3 +669,16 @@ audit-minimalblue:
         done
     fi
 
+# Debug dump pastebin for issue reporting
+
+debug-info:
+    #!/usr/bin/bash
+    rpm_ostree_status=$(echo -e "=== Rpm-Ostree Status ===\n"; rpm-ostree status --verbose)
+    sysinfo=$(echo -e "\n"; fpaste --sysinfo --printonly)
+    flatpaks=$(echo "=== Flatpaks Installed ==="; flatpak list --columns=application,version,options)
+    audit_results=$(echo -e "\n=== Audit Results ===\n"; ujust audit-secureblue)
+    local_overrides=$(echo -e "\n=== Listing Local Overrides ===\n"; ujust check-local-overrides)
+    recent_events=$(echo -e "\n=== Recent System Events ===\n"; journalctl -b -p err..alert --since "1 hour ago")
+    failed_services=$(echo -e "\n=== Failed Services ===\n"; systemctl list-units --state=failed)
+    content="$rpm_ostree_status$sysinfo$flatpaks$audit_results$local_overrides$recent_events$failed_services"
+    echo "$content" | fpaste --confirm --private=1
