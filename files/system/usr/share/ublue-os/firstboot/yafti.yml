@@ -84,7 +84,7 @@ screens:
       title: "Yafti run complete!"
       icon: "/path/to/icon"
       links:
-        - "POSTINSTALL-README":
-            run: /usr/bin/xdg-open https://github.com/minimalblue/minimalblue/blob/live/POSTINSTALL-README.md
+        - "Post-install README":
+            run: /usr/bin/xdg-open https://github.com/minimalblue/minimalblue/blob/live/docs/POSTINSTALL-README.md
       description: |
-        Complete your minimalblue installation by following the POSTINSTALL-README.
+        Complete your minimalblue installation by following the Post-install README.

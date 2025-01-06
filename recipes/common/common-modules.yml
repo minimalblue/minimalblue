@@ -19,3 +19,4 @@ modules:
       scripts:
         - enablecommonautoupdate.sh
     - type: minimalblue-signing
+      source: local

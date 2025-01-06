@@ -25,14 +25,15 @@ install:
   # ensure universal font coverage
   - google-noto-fonts-all
 remove:
+  - fedora-logos
   - firefox
   - firefox-langpacks
   - fuse
   - fedora-chromium-config
   - fedora-flathub-remote
-  - open-vm-tools
-  - open-vm-tools-desktop
-  - virtualbox-guest-additions
+#  - open-vm-tools
+#  - open-vm-tools-desktop
+#  - virtualbox-guest-additions
   - passim
 
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=minimalblue Cleanup
+After=local-fs.target network-online.target
+Requires=local-fs.target network-online.target
+ConditionPathExists=!/var/lib/minimalblue-cleanup.stamp
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/minimalbluecleanup
+ExecStartPost=/usr/bin/touch /var/lib/minimalblue-cleanup.stamp
+
+[Install]
+WantedBy=multi-user.target
