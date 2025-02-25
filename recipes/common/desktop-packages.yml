@@ -1,11 +1,9 @@
 type: rpm-ostree
 repos:
   - https://copr.fedorainfracloud.org/coprs/secureblue/bubblejail/repo/fedora-%OS_VERSION%/secureblue-bubblejail-fedora-%OS_VERSION%.repo
-  - https://copr.fedorainfracloud.org/coprs/secureblue/hardened-chromium/repo/fedora-%OS_VERSION%/secureblue-hardened-chromium-fedora-%OS_VERSION%.repo
-install:
+  - https://repo.secureblue.dev/secureblue.repo
   - headsetcontrol
-  - hardened-chromium
-  - hardened-chromium-subresource-filter
+  - trivalent
   - mediainfo
   - bubblejail
   - usbguard-notifier

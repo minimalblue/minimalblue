@@ -106,7 +106,7 @@ audit-minimalblue:
             fi
         done
     done
-    if [[ "${#sysctl_errors}" == 0 ]] && diff /usr/etc/sysctl.d/hardening.conf /etc/sysctl.d/hardening.conf > /dev/null; then
+    if [[ "${#sysctl_errors}" == 0 ]] && diff /usr/etc/sysctl.d/60-hardening.conf /etc/sysctl.d/60-hardening.conf > /dev/null; then
         print_status "$SYSCTL_TEST_STRING" "$STATUS_SUCCESS"
     else
         print_status "$SYSCTL_TEST_STRING" "$STATUS_FAILURE"
@@ -116,7 +116,7 @@ audit-minimalblue:
     fi
 
     SIGNED_IMAGE_TEST_STRING="Ensuring a signed image is in use"
-    if rpm-ostree status | grep -q "● ostree-image-signed"; then
+    if rpm-ostree status 2>/dev/null | grep -q "● ostree-image-signed"; then
         print_status "$SIGNED_IMAGE_TEST_STRING" "$STATUS_SUCCESS"
     else
         print_status "$SIGNED_IMAGE_TEST_STRING" "$STATUS_FAILURE"
@@ -181,7 +181,7 @@ audit-minimalblue:
             print_status "$SECUREDNS_TEST_STRING" "$STATUS_SUCCESS"
         else
             print_status "$SECUREDNS_TEST_STRING" "$STATUS_FAILURE"
-            suggestions+="System DNS resolution is not secure	To select a secure resolver, run:	$ ujust dns-selector"
+            suggestions+=("System DNS resolution is not secure	To select a secure resolver, run:	$ ujust dns-selector")
         fi
     else
         print_status "$SECUREDNS_TEST_STRING" "$STATUS_FAILURE"
@@ -209,7 +209,7 @@ audit-minimalblue:
         print_status "$BASH_TEST_STRING" "$STATUS_SUCCESS"
     else
         print_status "$BASH_TEST_STRING" "$STATUS_FAILURE"
-        suggestions+="The bash environment is not locked down	Run:	$ ujust toggle-bash-environment-lockdown"
+        suggestions+=("The bash environment is not locked down	Run:	$ ujust toggle-bash-environment-lockdown")
     fi
 
     WHEEL_TEST_STRING="Ensuring user is not a member of wheel"

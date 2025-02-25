@@ -3,9 +3,9 @@ dns-selector:
     #! /bin/run0 /bin/bash
     # constants
     readonly resolved_conf="/etc/systemd/resolved.conf.d/10-securedns.conf"
-    readonly policy_file="/etc/chromium/policies/managed/10-securedns-browser.json"
+    readonly policy_file="/etc/trivalent/policies/managed/10-securedns-browser.json"
     mkdir -p /etc/systemd/resolved.conf.d/
-    mkdir -p /etc/chromium/policies/managed/
+    mkdir -p /etc/trivalent/policies/managed/
     # variables
     valid_input="0"
     resolver_selection=""
@@ -74,6 +74,7 @@ dns-selector:
             done
             valid_input="0"
             case "$resolver_subselection" in
+                # Source for the IP addresses and hostnames/URLs: https://controld.com/free-dns
                 0)
                     resolver_ipv4_address="76.76.2.0"
                     resolver_ipv4_address_2="76.76.10.0"
@@ -138,6 +139,7 @@ dns-selector:
             done
             valid_input="0"
             case "$resolver_subselection" in
+                # Source for the IP addresses and hostnames/URLs: https://mullvad.net/en/help/dns-over-https-and-dns-over-tls
                 0)
                     resolver_ipv4_address="194.242.2.2"
                     resolver_ipv6_address="2a07:e340::2"
@@ -190,6 +192,7 @@ dns-selector:
             done
             valid_input="0"
             case "$resolver_subselection" in
+                # Source for the IP addresses and hostnames/URLs: https://developers.cloudflare.com/1.1.1.1/infrastructure/network-operators/#available-endpoints
                 0)
                     resolver_ipv4_address="1.1.1.1"
                     resolver_ipv4_address_2="1.0.0.1"
@@ -233,6 +236,7 @@ dns-selector:
             done
             valid_input="0"
             case "$resolver_subselection" in
+                # Source for the IP addresses and hostnames/URLs: https://dnsforge.de/#dnsdaten
                 0)
                     resolver_ipv4_address="176.9.93.198"
                     resolver_ipv4_address_2="176.9.1.117"
@@ -282,7 +286,7 @@ dns-selector:
             ;;
     esac
 
-    read -p "Would you like the resolver to be set in the default browser (hardened-chromium) via management policy? [y/N] " set_browser_policy
+    read -p "Would you like the resolver to be set in the default browser (Trivalent) via management policy? [y/N] " set_browser_policy
     if [[ "$set_browser_policy" == [Yy]* && "$resolver_selection" == 5 ]]; then
         read -p "Please enter the second resolver's HTTPS address (e.g. 'https://security.cloudflare-dns.com/dns-query'): " resolver_https_address
     fi
