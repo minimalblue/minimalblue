@@ -2,7 +2,7 @@ name: lxqt-main-hardened
 
 description: "ublue images for lxqt and disabled userns, hardened"
 
-base-image: ghcr.io/ublue-os/base-main
+base-image: quay.io/repository/fedora-ostree-desktops/base
 
 image-version: 41 
 
