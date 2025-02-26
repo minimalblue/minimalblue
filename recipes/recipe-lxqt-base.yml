@@ -2,7 +2,8 @@ name: lxqt-base
 
 description: "lxqt ublue base, without hardening"
 
-base-image: ghcr.io/ublue-os/base-main
+#base-image: ghcr.io/ublue-os/base-main
+base-image: quay.io/fedora-ostree-desktops/base
 
 image-version: 41 
 

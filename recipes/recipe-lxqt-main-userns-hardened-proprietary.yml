@@ -2,7 +2,8 @@ name: lxqt-main-userns-hardened
 
 description: "ublue images for lxqt and userns, hardened"
 
-base-image: ghcr.io/ublue-os/base-main
+#base-image: ghcr.io/ublue-os/base-main
+base-image: quay.io/fedora-ostree-desktops/base
 
 image-version: 41 
 
