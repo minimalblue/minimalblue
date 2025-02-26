@@ -5,6 +5,7 @@ modules:
     - type: script
       scripts:
         - installrpmfusion.sh
+        - addimageinfo.sh
     - from-file: common/common-packages.yml
     - type: files
       files:
@@ -15,8 +16,8 @@ modules:
     - type: justfiles
       validate: true
     - from-file: common/common-scripts.yml
-    - type: script
-      scripts:
-        - enablecommonautoupdate.sh
+#    - type: script
+#      scripts:
+#        - enablecommonautoupdate.sh
     - type: minimalblue-signing
       source: local
