@@ -23,9 +23,19 @@ audit-minimalblue:
 
         printf "%-64s [ \033[%dm%s\033[0m ]\n" "$check_name"... "$color_code" "$formatted_status"
     }
+
+    if command -v gum >/dev/null 2>&1; then
+        HAS_GUM=true
+    else
+        HAS_GUM=false
+    fi
     print_heading() {
         echo
-        gum style --bold --background=63 --foreground=228 "$1"
+        if [[ $HAS_GUM == true ]]; then 
+            gum style --bold --background=63 --foreground=228 "$1"
+        else
+            echo "$1"
+        fi
         printf '=%.0s' {1..76}
         echo
     }
@@ -86,7 +96,7 @@ audit-minimalblue:
     done
 
     SYSCTL_TEST_STRING="Ensuring no sysctl overrides"
-    readarray -t sysctl_hardening_conf < <(grep -v -E -e "^#" -e "^$" </usr/etc/sysctl.d/hardening.conf)
+    readarray -t sysctl_hardening_conf < <(grep -v -E -e "^#" -e "^$" </usr/etc/sysctl.d/60-hardening.conf)
     declare -A sysctl_hardening
     for line in "${sysctl_hardening_conf[@]}"; do
         parameter="$(sed -E -e "s/(.*) = .*/\1/"  <<<"$line")"
