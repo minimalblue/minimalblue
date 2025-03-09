@@ -1,11 +1,47 @@
 {
-  "default": [
-      {
-          "type": "reject"
-      }
-  ],
-  "transports": {
-      "docker": {
+    "default": [
+        {
+            "type": "reject"
+        }
+    ],
+    "transports": {
+        "docker": {
+          "gcr.io/projectsigstore": [
+              {
+                  "type": "sigstoreSigned",
+                  "keyPath": "/usr/etc/pki/containers/cosign-release.pub",
+                  "signedIdentity": {
+                      "type": "matchRepository"
+                  }
+              }
+          ],
+          "ghcr.io/wayblueorg": [
+            {
+              "type": "sigstoreSigned",
+              "keyPath": "/usr/etc/pki/containers/wayblueorg.pub",
+              "signedIdentity": {
+                "type": "matchRepository"
+              }
+            }
+          ],
+          "ghcr.io/zelikos": [
+            {
+              "type": "sigstoreSigned",
+              "keyPath": "/usr/etc/pki/containers/davincibox.pub",
+              "signedIdentity": {
+                "type": "matchRepository"
+              }
+            }
+          ],
+          "ghcr.io/jasonn3": [
+            {
+              "type": "sigstoreSigned",
+              "keyPath": "/usr/etc/pki/containers/build-container-installer.pub",
+              "signedIdentity": {
+                "type": "matchRepository"
+              }
+            }
+          ],
           "registry.access.redhat.com": [
               {
                   "type": "signedBy",
